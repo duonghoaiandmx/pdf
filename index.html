@@ -325,6 +325,19 @@
     .share-button:hover:not(:disabled) { background: var(--accent-soft); }
     .share-button:disabled { opacity: .45; cursor: not-allowed; }
     .share-hint { margin: 8px 2px 0; color: var(--muted); font-size: .76rem; }
+    .share-fallback {
+      margin-top: 11px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--surface);
+    }
+    .share-fallback[hidden] { display: none; }
+    .share-fallback strong { display: block; margin-bottom: 4px; font-size: .86rem; }
+    .share-fallback p { margin: 0 0 10px; color: var(--muted); font-size: .78rem; }
+    .fallback-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .fallback-actions button { min-height: 42px; }
+    @media (max-width: 390px) { .fallback-actions { grid-template-columns: 1fr; } }
     .install-button {
       width: 100%;
       min-height: 43px;
@@ -370,6 +383,55 @@
       font-size: .76rem;
     }
     .privacy-note svg { width: 16px; height: 16px; flex: 0 0 auto; margin-top: 1px; }
+    .archive {
+      margin-top: 20px;
+      padding: clamp(16px, 2.4vw, 24px);
+      border-radius: 22px 9px 22px 22px;
+    }
+    .archive-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+    .archive-title h2 { margin: 0 0 3px; font-size: 1.18rem; }
+    .archive-title p { margin: 0; color: var(--muted); font-size: .82rem; }
+    .archive-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+    .archive-actions[hidden] { display: none; }
+    .archive-actions button { white-space: nowrap; }
+    .archive-empty {
+      margin: 0;
+      padding: 28px 8px 8px;
+      color: var(--muted);
+      text-align: center;
+      font-size: .9rem;
+    }
+    .archive-list { display: grid; gap: 9px; padding-top: 14px; }
+    .pdf-row {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--surface);
+    }
+    .pdf-row input { width: 19px; height: 19px; accent-color: var(--accent); }
+    .pdf-meta { min-width: 0; }
+    .pdf-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 750; font-size: .9rem; }
+    .pdf-info { margin-top: 2px; color: var(--muted); font-size: .76rem; }
+    .pdf-row-actions { display: flex; gap: 6px; }
+    .pdf-row-actions .small-button { min-height: 34px; padding: 6px 9px; font-size: .78rem; }
+    .attribution {
+      margin: 18px 0 0;
+      color: var(--muted);
+      text-align: center;
+      font-size: .78rem;
+    }
     @media (max-width: 900px) {
       .intro { align-items: start; flex-direction: column; gap: 10px; }
       .intro p { max-width: 610px; }
@@ -387,6 +449,12 @@
       .thumb { width: 78px; height: 78px; }
       .settings { border-radius: 7px 16px 16px 16px; }
       .head-actions .small-button span { display: none; }
+      .archive { border-radius: 16px 7px 16px 16px; }
+      .archive-head { align-items: flex-start; flex-direction: column; }
+      .archive-actions { width: 100%; justify-content: stretch; }
+      .archive-actions button { flex: 1 1 135px; }
+      .pdf-row { grid-template-columns: auto minmax(0, 1fr); }
+      .pdf-row-actions { grid-column: 2; flex-wrap: wrap; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
@@ -398,7 +466,7 @@
     <section class="intro" aria-labelledby="main-title">
       <h1 id="main-title">Ghép ảnh thành một tệp PDF.</h1>
       <div class="intro-copy">
-        <p>Chọn nhiều ảnh, sắp xếp đúng thứ tự rồi tạo PDF. Trên điện thoại, bảng chia sẻ sẽ mở ngay để gửi qua Mail, Zalo và các ứng dụng khác.</p>
+        <p>Chọn nhiều ảnh, sắp xếp đúng thứ tự rồi tạo PDF. Nếu điện thoại hỗ trợ, bảng chia sẻ sẽ mở ngay; nếu không, công cụ sẽ lưu đúng tệp PDF vừa tạo và mở bản xem để bạn chia sẻ từ ứng dụng Tệp/Files.</p>
         <p class="owner">Chủ sở hữu: <strong>Dương Ân - BÌnh Dương 3</strong></p>
       </div>
     </section>
@@ -458,8 +526,17 @@
             </select>
           </div>
           <div class="field">
+            <label for="cropMode">Tự động cắt ảnh</label>
+            <select id="cropMode">
+              <option value="none">Không cắt</option>
+              <option value="paper">Theo lề giấy</option>
+              <option value="document">Theo lề tài liệu</option>
+            </select>
+            <small>“Lề giấy” bỏ nền ngoài tờ giấy; “lề tài liệu” cắt sát vùng nội dung.</small>
+          </div>
+          <div class="field">
             <div class="field-row">
-              <label for="marginRange">Lề trang</label>
+              <label for="marginRange">Lề trang PDF</label>
               <span class="range-value" id="marginValue">8 mm</span>
             </div>
             <input id="marginRange" type="range" min="0" max="24" step="2" value="8" />
@@ -478,6 +555,14 @@
           <button class="primary" id="makePdf" type="button" disabled>Tạo PDF và mở chia sẻ</button>
           <button class="share-button" id="sharePdf" type="button" disabled>Tải PDF xuống</button>
           <p class="share-hint" id="shareHint">Trên iPhone và Android, chọn Mail, Gmail, Zalo hoặc ứng dụng có trong bảng chia sẻ của máy.</p>
+          <div class="share-fallback" id="shareFallback" hidden>
+            <strong>Trình duyệt không hỗ trợ đính kèm trực tiếp</strong>
+            <p id="fallbackText">Bấm “Mở PDF để chia sẻ”: công cụ sẽ lưu đúng tệp PDF vừa tạo vào máy và mở bản xem. Sau đó chia sẻ tệp đó từ ứng dụng Tệp/Files.</p>
+            <div class="fallback-actions">
+              <button class="small-button" id="openPdf" type="button" disabled>Mở PDF để chia sẻ</button>
+              <button class="small-button" id="downloadFallback" type="button" disabled>Tải PDF xuống</button>
+            </div>
+          </div>
           <button class="install-button" id="installApp" type="button">Cài ứng dụng</button>
           <div class="install-help" id="installHelp" hidden role="status" aria-live="polite">
             <strong>Thêm vào màn hình chính</strong>
@@ -491,6 +576,23 @@
         </div>
       </aside>
     </div>
+
+    <section class="panel archive" aria-labelledby="archiveTitle">
+      <div class="archive-head">
+        <div class="archive-title">
+          <h2 id="archiveTitle">PDF đã tạo</h2>
+          <p>Lưu trong phiên đang mở. Chọn nhiều tệp để tải hoặc chia sẻ cùng lúc.</p>
+        </div>
+        <div class="archive-actions" id="archiveActions" hidden>
+          <button class="small-button" id="selectAllPdfs" type="button">Chọn tất cả</button>
+          <button class="small-button" id="downloadSelected" type="button" disabled>Tải tệp đã chọn</button>
+          <button class="small-button" id="shareSelected" type="button" disabled>Chia sẻ tệp đã chọn</button>
+        </div>
+      </div>
+      <p class="archive-empty" id="archiveEmpty">PDF vừa tạo sẽ xuất hiện tại đây.</p>
+      <div class="archive-list" id="archiveList" aria-live="polite"></div>
+    </section>
+    <footer class="attribution">Powered by Dương Ân</footer>
   </main>
 
   <script>
@@ -509,7 +611,19 @@
       var makePdf = document.getElementById('makePdf');
       var sharePdf = document.getElementById('sharePdf');
       var shareHint = document.getElementById('shareHint');
+      var shareFallback = document.getElementById('shareFallback');
+      var fallbackText = document.getElementById('fallbackText');
+      var openPdf = document.getElementById('openPdf');
+      var downloadFallback = document.getElementById('downloadFallback');
       var latestPdf = null;
+      var fallbackFile = null;
+      var pdfHistory = [];
+      var archiveList = document.getElementById('archiveList');
+      var archiveEmpty = document.getElementById('archiveEmpty');
+      var archiveActions = document.getElementById('archiveActions');
+      var selectAllPdfs = document.getElementById('selectAllPdfs');
+      var downloadSelected = document.getElementById('downloadSelected');
+      var shareSelected = document.getElementById('shareSelected');
       var summary = document.getElementById('summary');
       var status = document.getElementById('status');
       var marginRange = document.getElementById('marginRange');
@@ -520,6 +634,7 @@
       var installHelp = document.getElementById('installHelp');
       var installHelpText = document.getElementById('installHelpText');
       var installPrompt = null;
+      var previewUrls = [];
 
       function svgIcon(name) {
         var paths = {
@@ -546,9 +661,14 @@
       }
 
       function supportsFileShare(file) {
-        if (!navigator.share || !navigator.canShare) return false;
+        return supportsFileListShare([file]);
+      }
+
+      function supportsFileListShare(files) {
+        if (typeof navigator.share !== 'function') return false;
+        if (typeof navigator.canShare !== 'function') return true;
         try {
-          return navigator.canShare({ files: [file] });
+          return navigator.canShare({ files: files });
         } catch (error) {
           return false;
         }
@@ -557,15 +677,78 @@
       function updateShareUi(file) {
         var canAttach = supportsFileShare(file || new File([''], 'kiem-tra.pdf', { type: 'application/pdf' }));
         sharePdf.textContent = 'Tải PDF xuống';
+        makePdf.textContent = canAttach ? 'Tạo PDF và mở chia sẻ' : 'Tạo PDF';
         shareHint.textContent = canAttach
-          ? 'Bảng chia sẻ sẽ tự mở; chọn Mail, Gmail, Zalo hoặc ứng dụng khác. Bạn cũng có thể tải riêng một bản về máy.'
-          : 'Trình duyệt này chưa hỗ trợ chia sẻ tệp trực tiếp; PDF sẽ được tải xuống để bạn gửi thủ công.';
+          ? 'Bảng chia sẻ sẽ tự mở và đính kèm tệp PDF; chọn Mail, Gmail, Zalo hoặc ứng dụng khác. Bạn cũng có thể tải riêng một bản về máy.'
+          : 'Trình duyệt này không thể tự đính kèm tệp. Sau khi tạo, hãy lưu PDF thật vào máy rồi chia sẻ tệp đó từ ứng dụng Tệp/Files.';
+        if (canAttach) hideShareFallback();
+        else showShareFallback(file || null, file
+          ? 'Bấm “Mở PDF để chia sẻ”: công cụ sẽ lưu đúng tệp “' + file.name + '” vào máy và mở bản xem. Sau đó chia sẻ tệp đó từ ứng dụng Tệp/Files.'
+          : 'Tạo PDF trước. Nút dự phòng sẽ lưu đúng tệp vừa tạo vào máy để bạn chia sẻ từ ứng dụng Tệp/Files.');
         return canAttach;
+      }
+
+      function hideShareFallback() {
+        fallbackFile = null;
+        openPdf.disabled = true;
+        downloadFallback.disabled = true;
+        shareFallback.hidden = true;
       }
 
       function invalidatePdf() {
         latestPdf = null;
         sharePdf.disabled = true;
+        updateShareUi();
+      }
+
+      function selectedPdfs() {
+        return pdfHistory.filter(function (entry) { return entry.selected; });
+      }
+
+      function renderArchive() {
+        var selected = selectedPdfs();
+        archiveEmpty.hidden = pdfHistory.length > 0;
+        archiveActions.hidden = pdfHistory.length === 0;
+        downloadSelected.disabled = selected.length === 0;
+        shareSelected.disabled = selected.length === 0;
+        selectAllPdfs.textContent = selected.length === pdfHistory.length && pdfHistory.length ? 'Bỏ chọn tất cả' : 'Chọn tất cả';
+        archiveList.innerHTML = '';
+
+        pdfHistory.forEach(function (entry) {
+          var row = document.createElement('article');
+          row.className = 'pdf-row';
+          row.innerHTML =
+            '<input type="checkbox" aria-label="Chọn tệp PDF">' +
+            '<div class="pdf-meta"><div class="pdf-name"></div><div class="pdf-info"></div></div>' +
+            '<div class="pdf-row-actions">' +
+              '<button class="small-button one-download" type="button">Tải xuống</button>' +
+              '<button class="small-button one-share" type="button">Chia sẻ</button>' +
+              '<button class="small-button danger one-delete" type="button">Xóa</button>' +
+            '</div>';
+          var checkbox = row.querySelector('input');
+          checkbox.checked = entry.selected;
+          row.querySelector('.pdf-name').textContent = entry.file.name;
+          row.querySelector('.pdf-info').textContent = entry.pages + ' trang · ' + formatBytes(entry.file.size) + ' · ' + entry.created;
+          checkbox.addEventListener('change', function () { entry.selected = checkbox.checked; renderArchive(); });
+          row.querySelector('.one-download').addEventListener('click', function () { saveBlob(entry.file, entry.file.name); });
+          row.querySelector('.one-share').addEventListener('click', function () { shareFiles([entry.file]); });
+          row.querySelector('.one-delete').addEventListener('click', function () {
+            pdfHistory = pdfHistory.filter(function (saved) { return saved.id !== entry.id; });
+            renderArchive();
+          });
+          archiveList.appendChild(row);
+        });
+      }
+
+      function addPdfToHistory(file, pages) {
+        pdfHistory.unshift({
+          id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+          file: file,
+          pages: pages,
+          selected: false,
+          created: new Intl.DateTimeFormat('vi-VN', { hour: '2-digit', minute: '2-digit' }).format(new Date())
+        });
+        renderArchive();
       }
 
       function updateRangeLabels() {
@@ -703,11 +886,109 @@
         });
       }
 
-      function renderImageToJpeg(img, rotation, quality) {
+      function detectCropBounds(img, mode) {
+        if (mode === 'none') return { x: 0, y: 0, width: img.naturalWidth, height: img.naturalHeight };
+
+        var probe = document.createElement('canvas');
+        var scale = Math.min(1, 1100 / Math.max(img.naturalWidth, img.naturalHeight));
+        probe.width = Math.max(1, Math.round(img.naturalWidth * scale));
+        probe.height = Math.max(1, Math.round(img.naturalHeight * scale));
+        var ctx = probe.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(img, 0, 0, probe.width, probe.height);
+        var pixels = ctx.getImageData(0, 0, probe.width, probe.height).data;
+        var w = probe.width;
+        var h = probe.height;
+
+        function colorAt(x, y) {
+          var i = (Math.max(0, Math.min(h - 1, y)) * w + Math.max(0, Math.min(w - 1, x))) * 4;
+          return [pixels[i], pixels[i + 1], pixels[i + 2]];
+        }
+        function average(colors) {
+          var sum = colors.reduce(function (acc, c) { return [acc[0] + c[0], acc[1] + c[1], acc[2] + c[2]]; }, [0, 0, 0]);
+          return [sum[0] / colors.length, sum[1] / colors.length, sum[2] / colors.length];
+        }
+        function distance(a, b) {
+          return Math.max(Math.abs(a[0] - b[0]), Math.abs(a[1] - b[1]), Math.abs(a[2] - b[2]));
+        }
+        function findBounds(test, step, region) {
+          var startX = region ? region.x : 0;
+          var startY = region ? region.y : 0;
+          var endX = region ? Math.min(w, region.x + region.width) : w;
+          var endY = region ? Math.min(h, region.y + region.height) : h;
+          var left = endX, top = endY, right = -1, bottom = -1;
+          for (var y = startY; y < endY; y += step) {
+            for (var x = startX; x < endX; x += step) {
+              if (!test(colorAt(x, y))) continue;
+              if (x < left) left = x;
+              if (x > right) right = x;
+              if (y < top) top = y;
+              if (y > bottom) bottom = y;
+            }
+          }
+          if (right < left || bottom < top) return null;
+          return { x: left, y: top, width: right - left + 1, height: bottom - top + 1 };
+        }
+        function valid(bounds, minimumArea) {
+          return bounds && bounds.width * bounds.height >= w * h * minimumArea;
+        }
+
+        var insetX = Math.max(1, Math.round(w * .02));
+        var insetY = Math.max(1, Math.round(h * .02));
+        var corners = average([
+          colorAt(insetX, insetY), colorAt(w - 1 - insetX, insetY),
+          colorAt(insetX, h - 1 - insetY), colorAt(w - 1 - insetX, h - 1 - insetY)
+        ]);
+        var page = findBounds(function (c) { return distance(c, corners) > 34; }, 2);
+        if (!valid(page, .18)) page = { x: 0, y: 0, width: w, height: h };
+        if (mode === 'paper') {
+          var paperPad = Math.max(2, Math.round(Math.min(w, h) * .006));
+          page.x = Math.max(0, page.x - paperPad);
+          page.y = Math.max(0, page.y - paperPad);
+          page.width = Math.min(w - page.x, page.width + paperPad * 2);
+          page.height = Math.min(h - page.y, page.height + paperPad * 2);
+        } else {
+          var edgeSamples = [];
+          var stride = Math.max(1, Math.round(Math.min(page.width, page.height) / 24));
+          for (var sx = page.x; sx < page.x + page.width; sx += stride) {
+            edgeSamples.push(colorAt(sx, page.y + 1), colorAt(sx, page.y + page.height - 2));
+          }
+          for (var sy = page.y; sy < page.y + page.height; sy += stride) {
+            edgeSamples.push(colorAt(page.x + 1, sy), colorAt(page.x + page.width - 2, sy));
+          }
+          var paperColor = average(edgeSamples);
+          var content = findBounds(function (c) {
+            var luminance = c[0] * .299 + c[1] * .587 + c[2] * .114;
+            var paperLum = paperColor[0] * .299 + paperColor[1] * .587 + paperColor[2] * .114;
+            return distance(c, paperColor) > 30 || luminance < paperLum - 24;
+          }, 2, page);
+          if (valid(content, .035)) {
+            content.x = Math.max(content.x, page.x);
+            content.y = Math.max(content.y, page.y);
+            content.width = Math.min(content.width, page.x + page.width - content.x);
+            content.height = Math.min(content.height, page.y + page.height - content.y);
+            if (valid(content, .035)) page = content;
+          }
+          var documentPad = Math.max(4, Math.round(Math.min(w, h) * .018));
+          page.x = Math.max(0, page.x - documentPad);
+          page.y = Math.max(0, page.y - documentPad);
+          page.width = Math.min(w - page.x, page.width + documentPad * 2);
+          page.height = Math.min(h - page.y, page.height + documentPad * 2);
+        }
+
+        return {
+          x: Math.round(page.x / scale),
+          y: Math.round(page.y / scale),
+          width: Math.min(img.naturalWidth, Math.max(1, Math.round(page.width / scale))),
+          height: Math.min(img.naturalHeight, Math.max(1, Math.round(page.height / scale)))
+        };
+      }
+
+      function renderImageToJpeg(img, rotation, quality, cropMode) {
+        var crop = detectCropBounds(img, cropMode);
         var maxDimension = 2600;
-        var scale = Math.min(1, maxDimension / Math.max(img.naturalWidth, img.naturalHeight));
-        var sourceW = Math.max(1, Math.round(img.naturalWidth * scale));
-        var sourceH = Math.max(1, Math.round(img.naturalHeight * scale));
+        var scale = Math.min(1, maxDimension / Math.max(crop.width, crop.height));
+        var sourceW = Math.max(1, Math.round(crop.width * scale));
+        var sourceH = Math.max(1, Math.round(crop.height * scale));
         var swap = rotation % 180 !== 0;
         var canvas = document.createElement('canvas');
         canvas.width = swap ? sourceH : sourceW;
@@ -717,7 +998,7 @@
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.translate(canvas.width / 2, canvas.height / 2);
         ctx.rotate(rotation * Math.PI / 180);
-        ctx.drawImage(img, -sourceW / 2, -sourceH / 2, sourceW, sourceH);
+        ctx.drawImage(img, crop.x, crop.y, crop.width, crop.height, -sourceW / 2, -sourceH / 2, sourceW, sourceH);
         return { data: canvas.toDataURL('image/jpeg', quality), width: canvas.width, height: canvas.height };
       }
 
@@ -843,6 +1124,81 @@
         window.setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
       }
 
+      function openPdfPreview(file) {
+        if (!file) return false;
+        var url = URL.createObjectURL(file);
+        previewUrls.push(url);
+        var link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.type = 'application/pdf';
+        link.hidden = true;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        return true;
+      }
+
+      function saveAndOpenPdfForSharing(file) {
+        if (!file) return;
+        saveBlob(file, file.name);
+        openPdfPreview(file);
+        setStatus('Đã lưu đúng tệp “' + file.name + '” và mở bản xem. Nếu màn hình xem không có nút Chia sẻ, hãy mở ứng dụng Tệp/Files, chọn tệp này rồi chọn Mail, Zalo hoặc ứng dụng khác.', false);
+      }
+
+      function showShareFallback(file, message) {
+        fallbackFile = file;
+        openPdf.disabled = !file;
+        downloadFallback.disabled = !file;
+        fallbackText.textContent = message || 'Mở tệp PDF, sau đó nhấn nút Chia sẻ của trình xem để gửi qua Mail, Zalo hoặc ứng dụng khác.';
+        shareFallback.hidden = false;
+        if (file) shareFallback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      async function shareFiles(files) {
+        if (!files.length) return;
+        var shareData = {
+          files: files,
+          title: files.length === 1 ? files[0].name : files.length + ' tệp PDF',
+          text: files.length === 1 ? 'Tệp PDF “' + files[0].name + '”.' : files.length + ' tệp PDF được tạo từ ảnh.'
+        };
+        if (supportsFileListShare(files)) {
+          try {
+            await navigator.share(shareData);
+            hideShareFallback();
+            setStatus('Đã gửi ' + files.length + ' tệp PDF tới ứng dụng bạn chọn.', false);
+            return;
+          } catch (error) {
+            if (error && error.name === 'AbortError') {
+              setStatus('Bạn đã đóng bảng chia sẻ.', false);
+              return;
+            }
+            if (files.length === 1) {
+              showShareFallback(files[0]);
+              setStatus('Trình duyệt không đính kèm được tệp vào bảng chia sẻ. Hãy dùng nút dự phòng để lưu đúng tệp PDF rồi chia sẻ từ ứng dụng Tệp/Files.', false);
+              return;
+            }
+            setStatus('Trình duyệt không chia sẻ được nhiều tệp cùng lúc. Hãy tải các tệp đã chọn, chọn chúng trong ứng dụng Tệp/Files rồi bấm Chia sẻ.', false);
+            return;
+          }
+        }
+        if (files.length === 1) {
+          showShareFallback(files[0]);
+          setStatus('Trình duyệt không hỗ trợ đính kèm tệp trực tiếp. Hãy dùng nút dự phòng để lưu đúng tệp PDF rồi chia sẻ từ ứng dụng Tệp/Files.', false);
+          return;
+        }
+        setStatus('Trình duyệt không chia sẻ được nhiều tệp cùng lúc. Hãy tải các tệp đã chọn, chọn chúng trong ứng dụng Tệp/Files rồi bấm Chia sẻ.', false);
+      }
+
+      function downloadSelectedPdfs() {
+        var selected = selectedPdfs();
+        selected.forEach(function (entry, index) {
+          window.setTimeout(function () { saveBlob(entry.file, entry.file.name); }, index * 280);
+        });
+        setStatus('Đang tải ' + selected.length + ' tệp PDF đã chọn.', false);
+      }
+
       async function openShareSheet(file, pageCount, automatic) {
         var shareData = {
           files: [file],
@@ -853,6 +1209,7 @@
         if (supportsFileShare(file)) {
           try {
             await navigator.share(shareData);
+            hideShareFallback();
             setStatus('Đã gửi “' + file.name + '” tới ứng dụng bạn chọn.', false);
             return;
           } catch (error) {
@@ -860,15 +1217,16 @@
               setStatus('Đã tạo PDF. Bạn đã đóng bảng chia sẻ; có thể bấm “Tải PDF xuống” để lưu một bản.', false);
               return;
             }
+            showShareFallback(file);
             setStatus(automatic
-              ? 'PDF đã tạo xong nhưng trình duyệt chưa mở được bảng chia sẻ. Bạn có thể bấm “Tải PDF xuống”.'
-              : 'Không thể mở bảng chia sẻ trên trình duyệt này.', true);
+              ? 'PDF đã tạo xong nhưng trình duyệt không đính kèm được tệp. Hãy bấm “Mở PDF để chia sẻ” để lưu đúng tệp PDF và mở bản xem.'
+              : 'Trình duyệt không đính kèm được tệp. Hãy dùng nút dự phòng để lưu đúng tệp PDF rồi chia sẻ từ ứng dụng Tệp/Files.', false);
             return;
           }
         }
 
-        saveBlob(file, file.name);
-        setStatus('Thiết bị này chưa hỗ trợ chia sẻ tệp trực tiếp. Đã tải “' + file.name + '” xuống để bạn gửi thủ công.', false);
+        showShareFallback(file);
+        setStatus('PDF đã tạo xong. Hãy bấm “Mở PDF để chia sẻ” để lưu đúng tệp vừa tạo vào máy và mở bản xem.', false);
       }
 
       async function createPdf() {
@@ -876,9 +1234,11 @@
 
         makePdf.disabled = true;
         sharePdf.disabled = true;
+        hideShareFallback();
         var originalText = makePdf.textContent;
         makePdf.textContent = 'Đang tạo PDF…';
         var orientationChoice = document.getElementById('orientation').value;
+        var cropMode = document.getElementById('cropMode').value;
         var format = document.getElementById('pageSize').value;
         var margin = Number(marginRange.value);
         var quality = Number(qualityRange.value) / 100;
@@ -889,7 +1249,7 @@
             setStatus('Đang xử lý ảnh ' + (i + 1) + '/' + items.length + '…', false);
             var img = items[i].image;
             if (!img) throw new Error('Ảnh vẫn đang được chuẩn bị. Vui lòng thử lại sau giây lát.');
-            var rendered = renderImageToJpeg(img, items[i].rotation, quality);
+            var rendered = renderImageToJpeg(img, items[i].rotation, quality, cropMode);
             pages.push({
               bytes: dataUrlToBytes(rendered.data),
               width: rendered.width,
@@ -907,6 +1267,7 @@
           var fileName = cleanFileName(document.getElementById('fileName').value);
           latestPdf = { blob: blob, pages: pages.length };
           var file = new File([blob], fileName, { type: 'application/pdf' });
+          addPdfToHistory(file, pages.length);
           updateShareUi(file);
           sharePdf.disabled = false;
           await openShareSheet(file, pages.length, true);
@@ -972,10 +1333,29 @@
       clearAll.addEventListener('click', clearItems);
       makePdf.addEventListener('click', createPdf);
       sharePdf.addEventListener('click', downloadLatestPdf);
+      openPdf.addEventListener('click', function () {
+        if (!fallbackFile) return;
+        saveAndOpenPdfForSharing(fallbackFile);
+      });
+      downloadFallback.addEventListener('click', function () {
+        if (!fallbackFile) return;
+        saveBlob(fallbackFile, fallbackFile.name);
+        setStatus('Đã tải “' + fallbackFile.name + '”. Mở ứng dụng Tệp/Files, chọn tệp rồi nhấn Chia sẻ.', false);
+      });
+      selectAllPdfs.addEventListener('click', function () {
+        var shouldSelect = selectedPdfs().length !== pdfHistory.length;
+        pdfHistory.forEach(function (entry) { entry.selected = shouldSelect; });
+        renderArchive();
+      });
+      downloadSelected.addEventListener('click', downloadSelectedPdfs);
+      shareSelected.addEventListener('click', function () {
+        shareFiles(selectedPdfs().map(function (entry) { return entry.file; }));
+      });
       marginRange.addEventListener('input', function () { updateRangeLabels(); invalidatePdf(); });
       qualityRange.addEventListener('input', function () { updateRangeLabels(); invalidatePdf(); });
       document.getElementById('pageSize').addEventListener('change', invalidatePdf);
       document.getElementById('orientation').addEventListener('change', invalidatePdf);
+      document.getElementById('cropMode').addEventListener('change', invalidatePdf);
       dropZone.addEventListener('keydown', function (event) {
         if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); fileInput.click(); }
       });
@@ -986,10 +1366,14 @@
         dropZone.addEventListener(eventName, function (event) { event.preventDefault(); dropZone.classList.remove('dragover'); });
       });
       dropZone.addEventListener('drop', function (event) { addFiles(event.dataTransfer.files); });
-      window.addEventListener('beforeunload', function () { items.forEach(function (item) { URL.revokeObjectURL(item.url); }); });
+      window.addEventListener('beforeunload', function () {
+        items.forEach(function (item) { URL.revokeObjectURL(item.url); });
+        previewUrls.forEach(function (url) { URL.revokeObjectURL(url); });
+      });
 
       updateRangeLabels();
       updateShareUi();
+      renderArchive();
       render();
     })();
   </script>
