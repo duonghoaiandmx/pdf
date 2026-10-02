@@ -1,11 +1,12 @@
+
 <!doctype html>
 <html lang="vi">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="color-scheme" content="light dark" />
-  <meta name="theme-color" content="#f3f6f2" media="(prefers-color-scheme: light)" />
-  <meta name="theme-color" content="#111714" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#edf7ff" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0d1822" media="(prefers-color-scheme: dark)" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -17,31 +18,31 @@
   <style>
     :root {
       color-scheme: light dark;
-      --bg: #f3f6f2;
+      --bg: #edf7ff;
       --surface: #ffffff;
-      --surface-2: #e9eeea;
-      --ink: #18201c;
-      --muted: #5c675f;
-      --line: #cdd6cf;
-      --accent: #006b57;
-      --accent-strong: #005241;
-      --accent-soft: #d9eee7;
+      --surface-2: #dfeffc;
+      --ink: #132b3d;
+      --muted: #536f84;
+      --line: #bfd7e8;
+      --accent: #2c80bb;
+      --accent-strong: #175e91;
+      --accent-soft: #d7ecfb;
       --danger: #a64034;
       --danger-soft: #f8e4df;
-      --shadow: 0 18px 48px rgba(28, 46, 36, .10);
-      --focus: #e78455;
+      --shadow: 0 18px 48px rgba(33, 101, 147, .12);
+      --focus: #d87849;
     }
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #111714;
-        --surface: #19211d;
-        --surface-2: #222c27;
-        --ink: #edf4ef;
-        --muted: #a8b5ad;
-        --line: #35443b;
-        --accent: #63d7b7;
-        --accent-strong: #92e6ce;
-        --accent-soft: #1c3b32;
+        --bg: #0d1822;
+        --surface: #142330;
+        --surface-2: #1b3041;
+        --ink: #edf7ff;
+        --muted: #a9c2d5;
+        --line: #34536a;
+        --accent: #74c3f2;
+        --accent-strong: #a6dcfb;
+        --accent-soft: #173d57;
         --danger: #ff9a8c;
         --danger-soft: #452720;
         --shadow: 0 18px 48px rgba(0, 0, 0, .28);
@@ -86,12 +87,22 @@
       letter-spacing: -.045em;
       max-width: 720px;
     }
+    .intro-copy {
+      width: min(100%, 355px);
+    }
     .intro p {
-      margin: 0 0 5px;
-      max-width: 355px;
+      margin: 0;
       color: var(--muted);
       font-size: .98rem;
     }
+    .owner {
+      margin-top: 13px !important;
+      padding-top: 11px;
+      border-top: 1px solid var(--line);
+      color: var(--accent-strong) !important;
+      font-size: .84rem !important;
+    }
+    .owner strong { color: var(--ink); font-weight: 750; }
     .workspace {
       display: grid;
       grid-template-columns: minmax(0, 1fr) 330px;
@@ -386,7 +397,10 @@
   <main class="page">
     <section class="intro" aria-labelledby="main-title">
       <h1 id="main-title">Ghép ảnh thành một tệp PDF.</h1>
-      <p>Chọn nhiều ảnh, sắp xếp đúng thứ tự rồi tải xuống. Mỗi ảnh sẽ thành một trang riêng.</p>
+      <div class="intro-copy">
+        <p>Chọn nhiều ảnh, sắp xếp đúng thứ tự rồi tạo PDF. Trên điện thoại, bảng chia sẻ sẽ mở ngay để gửi qua Mail, Zalo và các ứng dụng khác.</p>
+        <p class="owner">Chủ sở hữu: <strong>Dương Ân - BÌnh Dương 3</strong></p>
+      </div>
     </section>
 
     <div class="workspace">
@@ -461,9 +475,9 @@
         </div>
         <div class="settings-foot">
           <p class="summary" id="summary">Chưa có ảnh để tạo PDF.</p>
-          <button class="primary" id="makePdf" type="button" disabled>Tạo và lưu PDF</button>
-          <button class="share-button" id="sharePdf" type="button" disabled>Chia sẻ PDF qua Mail</button>
-          <p class="share-hint" id="shareHint">Sau khi tạo PDF, nhấn nút chia sẻ rồi chọn Mail hoặc Gmail.</p>
+          <button class="primary" id="makePdf" type="button" disabled>Tạo PDF và mở chia sẻ</button>
+          <button class="share-button" id="sharePdf" type="button" disabled>Tải PDF xuống</button>
+          <p class="share-hint" id="shareHint">Trên iPhone và Android, chọn Mail, Gmail, Zalo hoặc ứng dụng có trong bảng chia sẻ của máy.</p>
           <button class="install-button" id="installApp" type="button">Cài ứng dụng</button>
           <div class="install-help" id="installHelp" hidden role="status" aria-live="polite">
             <strong>Thêm vào màn hình chính</strong>
@@ -542,10 +556,10 @@
 
       function updateShareUi(file) {
         var canAttach = supportsFileShare(file || new File([''], 'kiem-tra.pdf', { type: 'application/pdf' }));
-        sharePdf.textContent = canAttach ? 'Chia sẻ PDF qua Mail' : 'Mở email để đính kèm PDF';
+        sharePdf.textContent = 'Tải PDF xuống';
         shareHint.textContent = canAttach
-          ? 'Sau khi tạo PDF, nhấn nút chia sẻ rồi chọn Mail hoặc Gmail.'
-          : 'Trình duyệt này cần bạn chọn tệp PDF đã tải xuống khi đính kèm email.';
+          ? 'Bảng chia sẻ sẽ tự mở; chọn Mail, Gmail, Zalo hoặc ứng dụng khác. Bạn cũng có thể tải riêng một bản về máy.'
+          : 'Trình duyệt này chưa hỗ trợ chia sẻ tệp trực tiếp; PDF sẽ được tải xuống để bạn gửi thủ công.';
         return canAttach;
       }
 
@@ -562,11 +576,14 @@
 
       function render() {
         var hasItems = items.length > 0;
+        var imagesReady = hasItems && items.every(function (item) { return !!item.image; });
         dropZone.hidden = hasItems;
         listWrap.hidden = !hasItems;
-        makePdf.disabled = !hasItems;
+        makePdf.disabled = !imagesReady;
         fileStats.textContent = items.length + ' ảnh · ' + formatBytes(totalBytes());
-        summary.textContent = hasItems ? items.length + ' ảnh · ' + items.length + ' trang PDF' : 'Chưa có ảnh để tạo PDF.';
+        summary.textContent = imagesReady
+          ? items.length + ' ảnh · ' + items.length + ' trang PDF'
+          : (hasItems ? 'Đang đọc ảnh…' : 'Chưa có ảnh để tạo PDF.');
         imageList.innerHTML = '';
 
         items.forEach(function (item, index) {
@@ -661,7 +678,14 @@
           return;
         }
         valid.forEach(function (file) {
-          items.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2), file: file, url: URL.createObjectURL(file), rotation: 0 });
+          var item = { id: Date.now().toString(36) + Math.random().toString(36).slice(2), file: file, url: URL.createObjectURL(file), rotation: 0, image: null };
+          items.push(item);
+          readImage(item).then(function (img) {
+            item.image = img;
+            render();
+          }).catch(function (error) {
+            setStatus(error.message, true);
+          });
         });
         invalidatePdf();
         if (valid.length !== files.length) setStatus('Một số tệp không phải định dạng ảnh được hỗ trợ nên đã được bỏ qua.', true);
@@ -819,6 +843,34 @@
         window.setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
       }
 
+      async function openShareSheet(file, pageCount, automatic) {
+        var shareData = {
+          files: [file],
+          title: file.name,
+          text: 'Tệp PDF gồm ' + pageCount + ' trang.'
+        };
+
+        if (supportsFileShare(file)) {
+          try {
+            await navigator.share(shareData);
+            setStatus('Đã gửi “' + file.name + '” tới ứng dụng bạn chọn.', false);
+            return;
+          } catch (error) {
+            if (error && error.name === 'AbortError') {
+              setStatus('Đã tạo PDF. Bạn đã đóng bảng chia sẻ; có thể bấm “Tải PDF xuống” để lưu một bản.', false);
+              return;
+            }
+            setStatus(automatic
+              ? 'PDF đã tạo xong nhưng trình duyệt chưa mở được bảng chia sẻ. Bạn có thể bấm “Tải PDF xuống”.'
+              : 'Không thể mở bảng chia sẻ trên trình duyệt này.', true);
+            return;
+          }
+        }
+
+        saveBlob(file, file.name);
+        setStatus('Thiết bị này chưa hỗ trợ chia sẻ tệp trực tiếp. Đã tải “' + file.name + '” xuống để bạn gửi thủ công.', false);
+      }
+
       async function createPdf() {
         if (!items.length) return;
 
@@ -835,8 +887,8 @@
           var pages = [];
           for (var i = 0; i < items.length; i++) {
             setStatus('Đang xử lý ảnh ' + (i + 1) + '/' + items.length + '…', false);
-            await new Promise(function (resolve) { setTimeout(resolve, 0); });
-            var img = await readImage(items[i]);
+            var img = items[i].image;
+            if (!img) throw new Error('Ảnh vẫn đang được chuẩn bị. Vui lòng thử lại sau giây lát.');
             var rendered = renderImageToJpeg(img, items[i].rotation, quality);
             pages.push({
               bytes: dataUrlToBytes(rendered.data),
@@ -849,60 +901,33 @@
             rendered.data = null;
           }
 
-          setStatus('Đang chuẩn bị tệp tải xuống…', false);
+          setStatus('Đang chuẩn bị bảng chia sẻ…', false);
           var pdfBytes = buildPdfBytes(pages, format, margin);
           var blob = new Blob([pdfBytes], { type: 'application/pdf' });
           var fileName = cleanFileName(document.getElementById('fileName').value);
           latestPdf = { blob: blob, pages: pages.length };
-          updateShareUi(new File([blob], fileName, { type: 'application/pdf' }));
+          var file = new File([blob], fileName, { type: 'application/pdf' });
+          updateShareUi(file);
           sharePdf.disabled = false;
-          saveBlob(blob, fileName);
-          setStatus('Đã tạo và lưu “' + fileName + '”. Bạn có thể chia sẻ tệp qua Mail hoặc Gmail.', false);
+          await openShareSheet(file, pages.length, true);
         } catch (error) {
           invalidatePdf();
           setStatus(error && error.message ? error.message : 'Không thể tạo PDF từ các ảnh này.', true);
         } finally {
-          makePdf.disabled = !items.length;
+          makePdf.disabled = !items.length || !items.every(function (item) { return !!item.image; });
           makePdf.textContent = originalText;
         }
       }
 
-      async function shareLatestPdf() {
+      function downloadLatestPdf() {
         if (!latestPdf) {
-          setStatus('Hãy tạo PDF trước khi chia sẻ.', true);
+          setStatus('Hãy tạo PDF trước khi tải xuống.', true);
           return;
         }
 
         var fileName = cleanFileName(document.getElementById('fileName').value);
-        var file = new File([latestPdf.blob], fileName, { type: 'application/pdf' });
-        var shareData = {
-          files: [file],
-          title: fileName,
-          text: 'Tệp PDF gồm ' + latestPdf.pages + ' trang.'
-        };
-
-        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-          try {
-            await navigator.share(shareData);
-            setStatus('Đã chia sẻ “' + fileName + '”.', false);
-          } catch (error) {
-            if (!error || error.name !== 'AbortError') {
-              setStatus('Không thể mở bảng chia sẻ. PDF vẫn còn trong thư mục tải xuống.', true);
-            }
-          }
-          return;
-        }
-
         saveBlob(latestPdf.blob, fileName);
-        var subject = encodeURIComponent('Tệp PDF: ' + fileName);
-        var body = encodeURIComponent('Tệp PDF đã được tải xuống thiết bị. Hãy đính kèm tệp “' + fileName + '” vào email này.');
-        var mailLink = document.createElement('a');
-        mailLink.href = 'mailto:?subject=' + subject + '&body=' + body;
-        mailLink.hidden = true;
-        document.body.appendChild(mailLink);
-        mailLink.click();
-        mailLink.remove();
-        setStatus('Trình duyệt này không cho đính kèm tự động. PDF đã được tải xuống; hãy chọn tệp trong thư mục tải xuống để đính kèm vào email.', false);
+        setStatus('Đã tải “' + fileName + '” xuống thiết bị.', false);
       }
 
       function isStandalone() {
@@ -946,7 +971,7 @@
       addMore.addEventListener('click', function () { fileInput.click(); });
       clearAll.addEventListener('click', clearItems);
       makePdf.addEventListener('click', createPdf);
-      sharePdf.addEventListener('click', shareLatestPdf);
+      sharePdf.addEventListener('click', downloadLatestPdf);
       marginRange.addEventListener('input', function () { updateRangeLabels(); invalidatePdf(); });
       qualityRange.addEventListener('input', function () { updateRangeLabels(); invalidatePdf(); });
       document.getElementById('pageSize').addEventListener('change', invalidatePdf);
